@@ -7,9 +7,9 @@ resource "null_resource" "update_fstab" {
   }
 
   provisioner "remote-exec" {
-      inline = [
-        "sudo sed -i '/google-region-data/d' /etc/fstab",
-      ]
+    inline = [
+      "sudo sed -i '/google-region-data/d' /etc/fstab",
+    ]
   }
 
   provisioner "local-exec" {
@@ -19,8 +19,8 @@ resource "null_resource" "update_fstab" {
 }
 
 resource "google_compute_snapshot" "snap_zonal_disk" {
-  name        = "my-zonal-disk-snapshot"
-  source_disk = var.disk_name_zonal
-  zone        = "us-central1-a"
+  name              = "my-zonal-disk-snapshot"
+  source_disk       = var.disk_name_zonal
+  zone              = "us-central1-a"
   storage_locations = ["us-central1"]
 }

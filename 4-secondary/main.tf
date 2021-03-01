@@ -1,9 +1,9 @@
 resource "google_compute_disk" "failover_zonal_disk" {
-  name  = "my-failover-zonal-disk"
+  name     = "my-failover-zonal-disk"
   snapshot = "my-zonal-disk-snapshot"
-  size  = 10
-  type  = "pd-ssd"
-  zone  = "us-central1-b"
+  size     = 10
+  type     = "pd-ssd"
+  zone     = "us-central1-b"
 }
 
 resource "google_compute_instance" "main" {
@@ -14,9 +14,9 @@ resource "google_compute_instance" "main" {
   allow_stopping_for_update = true
 
   attached_disk {
-      source      = google_compute_disk.failover_zonal_disk.self_link
-      device_name = var.device_name_zonal
-      mode        = "READ_WRITE"
+    source      = google_compute_disk.failover_zonal_disk.self_link
+    device_name = var.device_name_zonal
+    mode        = "READ_WRITE"
 
   }
 
@@ -60,15 +60,15 @@ resource "null_resource" "provision_regional_disk" {
   # }
 
   provisioner "file" {
-      source      = "./templates/provision-regional-disk.sh"
-      destination = "/tmp/provision-regional-disk.sh"
+    source      = "./templates/provision-regional-disk.sh"
+    destination = "/tmp/provision-regional-disk.sh"
   }
 
   provisioner "remote-exec" {
-      inline = [
-        "chmod +x /tmp/provision-regional-disk.sh",
-        "/tmp/provision-regional-disk.sh ${var.device_name_region}",
-      ]
+    inline = [
+      "chmod +x /tmp/provision-regional-disk.sh",
+      "/tmp/provision-regional-disk.sh ${var.device_name_region}",
+    ]
   }
 
   depends_on = [google_compute_instance.main]
