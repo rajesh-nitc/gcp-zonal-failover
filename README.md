@@ -1,1 +1,1 @@
-# gcp-zonal-failover
+# gcp-failover

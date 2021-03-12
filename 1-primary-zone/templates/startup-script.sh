@@ -24,8 +24,11 @@ fi
 mkdir -p /opt/myapp/data{1,2}
 mount -a
 
-echo "Hi, This is zonal data" >> /opt/myapp/data1/test1.txt
-echo "Hi, This is regional data" >> /opt/myapp/data2/test2.txt
+HOSTNAME=$(hostname)
+DATE=$(date)
 
-echo "<!doctype html><html><body><h1>Hello World!</h1></body></html>" | sudo tee /var/www/html/index.html
+echo "This is zone data at: $DATE" >> /opt/myapp/data1/test1.txt
+echo "This is region data at: $DATE" >> /opt/myapp/data2/test1.txt
+
+echo "<!doctype html><html><body><h1>Hostname: $HOSTNAME</h1></body></html>" | sudo tee /var/www/html/index.html
 sudo systemctl restart apache2
