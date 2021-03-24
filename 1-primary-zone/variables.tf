@@ -26,9 +26,8 @@ variable "device_name_region" {
 }
 
 variable "failback" {
-  type        = string
-  description = "GCP Project id"
-  default     = false
+  type    = bool
+  default = false
 }
 
 variable "latest_snapshot_zonal_disk_b" {

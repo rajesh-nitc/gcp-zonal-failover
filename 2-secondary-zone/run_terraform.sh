@@ -5,6 +5,12 @@ set -xe
 project_id=
 disk_name=disk-zo-a
 
+export TF_VAR_bootstrap=false
+export TF_VAR_failover=false
+terraform init
+terraform plan
+terraform apply --auto-approve
+
 # Get latest snapshot
 # latest_snapshot_zonal_disk_a=$(gcloud compute snapshots list \
 #     --project=${project_id} \

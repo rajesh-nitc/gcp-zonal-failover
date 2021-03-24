@@ -97,12 +97,13 @@ resource "google_compute_disk_resource_policy_attachment" "default" {
 # Failback
 
 resource "random_id" "random_hash_suffix" {
+  count       = var.failback ? 1 : 0
   byte_length = 4
 }
 
 resource "google_compute_disk" "disk_from_latest_snapshot" {
   count    = var.failback ? 1 : 0
-  name     = "${var.disk_zo_a}-${random_id.random_hash_suffix.hex}"
+  name     = "${var.disk_zo_a}-${random_id.random_hash_suffix[count.index].hex}"
   type     = "pd-ssd"
   zone     = "${var.region}-${var.zone_a}"
   snapshot = var.latest_snapshot_zonal_disk_b
@@ -110,7 +111,7 @@ resource "google_compute_disk" "disk_from_latest_snapshot" {
 }
 
 resource "null_resource" "detach_regional_disk" {
-  count = var.failback ? 1 : 0
+  count = var.failback ? 0 : 1
   provisioner "local-exec" {
     command = "gcloud compute instances detach-disk ${var.instance_name_zo_b} --project ${var.project_id} --zone ${var.region}-${var.zone_b} --disk ${var.disk_regional} --disk-scope regional"
   }

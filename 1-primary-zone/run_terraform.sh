@@ -5,6 +5,11 @@ set -xe
 project_id=
 disk_name=disk-zo-b
 
+export TF_VAR_failback=false
+terraform init
+terraform plan
+terraform apply --auto-approve
+
 # Get latest snapshot
 # latest_snapshot_zonal_disk_b=$(gcloud compute snapshots list \
 #     --project=${project_id} \

@@ -4,9 +4,8 @@ variable "project_id" {
 }
 
 variable "failover" {
-  type        = string
-  description = "GCP Project id"
-  default     = false
+  type    = bool
+  default = false
 }
 
 variable "latest_snapshot_zonal_disk_a" {
@@ -68,5 +67,10 @@ variable "disk_regional" {
 
 variable "regional_disk_self_link" {
   type = string
+}
+
+variable "bootstrap" {
+  type    = bool
+  default = true
 }
 

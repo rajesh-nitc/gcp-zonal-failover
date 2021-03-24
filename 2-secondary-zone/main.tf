@@ -70,10 +70,10 @@ resource "google_compute_instance_group" "main" {
 }
 
 resource "null_resource" "stop_vm" {
-  count = var.failover ? 0 : 1
+  count = var.bootstrap ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
-    sleep 5
+    sleep 10
     gcloud compute instances stop ${google_compute_instance.main[count.index].name} --zone=${var.region}-${var.zone_b} --project=${var.project_id}
     EOT
   }
@@ -112,12 +112,13 @@ resource "google_compute_disk_resource_policy_attachment" "default" {
 # Failover
 
 resource "random_id" "random_hash_suffix" {
+  count       = var.failover ? 1 : 0
   byte_length = 4
 }
 
 resource "google_compute_disk" "disk_from_latest_snapshot" {
   count    = var.failover ? 1 : 0
-  name     = "${var.disk_zo_b}-${random_id.random_hash_suffix.hex}"
+  name     = "${var.disk_zo_b}-${random_id.random_hash_suffix[count.index].hex}"
   type     = "pd-ssd"
   zone     = "${var.region}-${var.zone_b}"
   snapshot = var.latest_snapshot_zonal_disk_a
