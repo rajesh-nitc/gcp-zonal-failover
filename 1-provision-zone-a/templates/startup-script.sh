@@ -1,9 +1,13 @@
 #!/bin/bash
 
-set -xe
+# set -xe
 
+sudo dpkg --configure -a
 sudo apt-get update -y
 sudo apt-get install -y apache2
+HOSTNAME=$(hostname)
+echo "<!doctype html><html><body><h1>Hostname: $HOSTNAME</h1></body></html>" | sudo tee /var/www/html/index.html
+sudo systemctl restart apache2
 
 sudo mkdir -p /opt/myapp
 
@@ -24,11 +28,7 @@ fi
 mkdir -p /opt/myapp/data{1,2}
 mount -a
 
-HOSTNAME=$(hostname)
 DATE=$(date)
 
-echo "This is zone data at: $DATE" >> /opt/myapp/data1/test1.txt
-echo "This is region data at: $DATE" >> /opt/myapp/data2/test1.txt
-
-echo "<!doctype html><html><body><h1>Hostname: $HOSTNAME</h1></body></html>" | sudo tee /var/www/html/index.html
-sudo systemctl restart apache2
+echo "This is zone a data at: $DATE" >> /opt/myapp/data1/test1.txt
+echo "This is zone a region data at: $DATE" >> /opt/myapp/data2/test1.txt
