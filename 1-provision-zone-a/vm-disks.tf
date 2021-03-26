@@ -1,3 +1,8 @@
+locals {
+  latest_snap_zo_b_split = split("-",var.latest_snapshot_zonal_disk_b)
+  disk_zo_a_suffix = element(local.latest_snap_zo_b_split,length(local.latest_snap_zo_b_split)-1) 
+}
+
 resource "google_compute_instance" "main" {
   count                     = 1
   project                   = var.project_id
@@ -95,7 +100,7 @@ resource "google_compute_disk_resource_policy_attachment" "default" {
 
 resource "google_compute_disk" "disk_from_latest_snapshot" {
   count    = var.bootstrap ? 0 : 1
-  name     = var.latest_snapshot_zonal_disk_b
+  name     = "${var.disk_zo_a}-${local.disk_zo_a_suffix}"
   type     = "pd-ssd"
   zone     = "${var.region}-${var.zone_a}"
   snapshot = var.latest_snapshot_zonal_disk_b
