@@ -11,7 +11,6 @@ variable "latest_snapshot_zonal_disk_a" {
 
 variable "backend_service" {
   type        = string
-  description = "Latest snapshot"
 }
 
 variable "region" {
