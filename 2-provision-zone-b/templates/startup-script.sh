@@ -27,8 +27,3 @@ fi
 
 mkdir -p /opt/myapp/data{1,2}
 mount -a
-
-DATE=$(date)
-
-echo "This is zone b data at: $DATE" >> /opt/myapp/data1/test1.txt
-echo "This is zone b region data at: $DATE" >> /opt/myapp/data2/test1.txt
