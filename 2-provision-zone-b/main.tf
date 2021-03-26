@@ -3,14 +3,6 @@ locals {
   disk_zo_b_suffix = element(local.latest_snap_zo_a_split,length(local.latest_snap_zo_a_split)-1) 
 }
 
-resource "google_compute_disk" "default" {
-  count = var.bootstrap ? 1 : 0
-  name  = var.disk_zo_b
-  zone  = "${var.region}-${var.zone_b}"
-  type  = "pd-ssd"
-  size  = 10
-}
-
 resource "google_compute_instance" "main" {
   count                     = 1
   name                      = var.instance_name
@@ -19,10 +11,13 @@ resource "google_compute_instance" "main" {
   machine_type              = "n1-standard-1"
   allow_stopping_for_update = true
 
-  attached_disk {
-    source      = var.bootstrap ? google_compute_disk.default[count.index].self_link : google_compute_disk.disk_from_latest_snapshot[count.index].self_link
-    device_name = var.device_name_zonal
-    mode        = "READ_WRITE"
+  dynamic "attached_disk" {
+    for_each = var.bootstrap ? [] : [""]
+    content {
+      source      = google_compute_disk.disk_from_latest_snapshot[count.index].self_link
+      device_name = var.device_name_zonal
+      mode        = "READ_WRITE"
+    }
   }
 
   dynamic "attached_disk" {
@@ -107,10 +102,10 @@ resource "google_compute_resource_policy" "default" {
 }
 
 resource "google_compute_disk_resource_policy_attachment" "default" {
-  count   = 1
+  count   = var.bootstrap ? 0 : 1
   project = var.project_id
   name    = google_compute_resource_policy.default.name
-  disk    = var.bootstrap ? google_compute_disk.default[count.index].name : google_compute_disk.disk_from_latest_snapshot[count.index].name
+  disk    = google_compute_disk.disk_from_latest_snapshot[count.index].name
   zone    = "${var.region}-${var.zone_b}"
 }
 
