@@ -8,7 +8,7 @@ resource "google_compute_instance" "main" {
   allow_stopping_for_update = true
 
   attached_disk {
-    source      = var.failback ? google_compute_disk.disk_from_latest_snapshot[count.index].self_link : google_compute_disk.zonaldisk[count.index].self_link
+    source      = var.bootstrap ? google_compute_disk.zonaldisk[count.index].self_link : google_compute_disk.disk_from_latest_snapshot[count.index].self_link
     device_name = var.device_name_zonal
     mode        = "READ_WRITE"
 
@@ -55,7 +55,7 @@ resource "google_compute_region_disk" "regiondisk" {
 }
 
 resource "google_compute_disk" "zonaldisk" {
-  count   = var.failback ? 0 : 1
+  count   = var.bootstrap ? 1 : 0
   project = var.project_id
   name    = var.disk_zo_a
   zone    = "${var.region}-${var.zone_a}"
@@ -65,7 +65,7 @@ resource "google_compute_disk" "zonaldisk" {
 
 resource "google_compute_resource_policy" "default" {
   project = var.project_id
-  name    = "zone-a-policy"
+  name    = "zone-a-pol"
   region  = var.region
   snapshot_schedule_policy {
     schedule {
@@ -89,21 +89,13 @@ resource "google_compute_disk_resource_policy_attachment" "default" {
   count   = 1
   project = var.project_id
   name    = google_compute_resource_policy.default.name
-  disk    = var.failback ? google_compute_disk.disk_from_latest_snapshot[count.index].name : google_compute_disk.zonaldisk[count.index].name
+  disk    = var.bootstrap ? google_compute_disk.zonaldisk[count.index].name : google_compute_disk.disk_from_latest_snapshot[count.index].name
   zone    = "${var.region}-${var.zone_a}"
 }
 
-
-# Failback
-
-resource "random_id" "random_hash_suffix" {
-  count       = var.failback ? 1 : 0
-  byte_length = 4
-}
-
 resource "google_compute_disk" "disk_from_latest_snapshot" {
-  count    = var.failback ? 1 : 0
-  name     = "${var.disk_zo_a}-${random_id.random_hash_suffix[count.index].hex}"
+  count    = var.bootstrap ? 0 : 1
+  name     = var.latest_snapshot_zonal_disk_b
   type     = "pd-ssd"
   zone     = "${var.region}-${var.zone_a}"
   snapshot = var.latest_snapshot_zonal_disk_b
@@ -111,7 +103,10 @@ resource "google_compute_disk" "disk_from_latest_snapshot" {
 }
 
 resource "null_resource" "detach_regional_disk" {
-  count = var.failback ? 0 : 1
+  count = var.bootstrap ? 0 : 1
+  triggers = {
+    timestamp = timestamp()
+  }
   provisioner "local-exec" {
     command = "gcloud compute instances detach-disk ${var.instance_name_zo_b} --project ${var.project_id} --zone ${var.region}-${var.zone_b} --disk ${var.disk_regional} --disk-scope regional"
   }

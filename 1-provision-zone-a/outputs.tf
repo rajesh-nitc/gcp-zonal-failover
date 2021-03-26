@@ -1,7 +1,3 @@
-output "disk_zo_a" {
-  value = var.failback ? null : google_compute_disk.zonaldisk[0].name
-}
-
 output "backend_service" {
   value = google_compute_region_backend_service.default[0].name
 }

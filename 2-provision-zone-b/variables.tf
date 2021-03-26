@@ -3,11 +3,6 @@ variable "project_id" {
   description = "GCP Project id"
 }
 
-variable "failover" {
-  type    = bool
-  default = false
-}
-
 variable "latest_snapshot_zonal_disk_a" {
   type        = string
   description = "Latest snapshot"
@@ -28,10 +23,6 @@ variable "zone_a" {
 }
 
 variable "zone_b" {
-  type = string
-}
-
-variable "disk_zo_a" {
   type = string
 }
 

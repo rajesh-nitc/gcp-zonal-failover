@@ -25,9 +25,9 @@ variable "device_name_region" {
   default = "region-data"
 }
 
-variable "failback" {
+variable "bootstrap" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "latest_snapshot_zonal_disk_b" {
