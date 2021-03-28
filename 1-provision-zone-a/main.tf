@@ -25,7 +25,7 @@ resource "google_compute_instance" "main" {
     }
   }
 
-  desired_status = "RUNNING"
+  desired_status = var.bootstrap ? "RUNNING" : "TERMINATED"
 
   metadata_startup_script = templatefile("templates/startup-script.sh", {
     device_name_zonal  = var.device_name_zonal,
