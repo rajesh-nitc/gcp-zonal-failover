@@ -1,6 +1,6 @@
 locals {
-  latest_snap_zo_a_split = split("-",var.latest_snapshot_zonal_disk_a)
-  disk_zo_b_suffix = element(local.latest_snap_zo_a_split,length(local.latest_snap_zo_a_split)-1) 
+  latest_snap_zo_a_split = split("-", var.latest_snapshot_zonal_disk_a)
+  disk_zo_b_suffix       = element(local.latest_snap_zo_a_split, length(local.latest_snap_zo_a_split) - 1)
 }
 
 resource "google_compute_instance" "main" {
@@ -10,24 +10,6 @@ resource "google_compute_instance" "main" {
   tags                      = []
   machine_type              = "n1-standard-1"
   allow_stopping_for_update = true
-
-  dynamic "attached_disk" {
-    for_each = var.bootstrap ? [] : [""]
-    content {
-      source      = google_compute_disk.disk_from_latest_snapshot[count.index].self_link
-      device_name = var.device_name_zonal
-      mode        = "READ_WRITE"
-    }
-  }
-
-  dynamic "attached_disk" {
-    for_each = var.bootstrap ? [] : [""]
-    content {
-      source      = var.regional_disk_self_link
-      device_name = var.device_name_region
-      mode        = "READ_WRITE"
-    }
-  }
 
   boot_disk {
     initialize_params {
@@ -49,8 +31,26 @@ resource "google_compute_instance" "main" {
     device_name_region = var.device_name_region
   })
 
-  depends_on = [null_resource.detach_regional_disk]
+  lifecycle {
+    ignore_changes = [attached_disk]
+  }
 
+}
+
+resource "google_compute_disk" "zonaldisk" {
+  count   = var.bootstrap ? 1 : 0
+  project = var.project_id
+  name    = "bootstrap-disk"
+  zone    = "${var.region}-${var.zone_b}"
+  type    = "pd-ssd"
+  size    = 10
+}
+
+resource "google_compute_attached_disk" "zonal_disk" {
+  count       = 1
+  disk        = var.bootstrap ? google_compute_disk.zonaldisk[count.index].id : google_compute_disk.disk_from_latest_snapshot[count.index].id
+  instance    = google_compute_instance.main[count.index].id
+  device_name = var.device_name_zonal
 }
 
 resource "google_compute_instance_group" "main" {
@@ -73,7 +73,6 @@ resource "null_resource" "stop_vm" {
   count = var.bootstrap ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
-    sleep 10
     gcloud compute instances stop ${google_compute_instance.main[count.index].name} --zone=${var.region}-${var.zone_b} --project=${var.project_id}
     EOT
   }
@@ -118,14 +117,19 @@ resource "google_compute_disk" "disk_from_latest_snapshot" {
   size     = 10
 }
 
-resource "null_resource" "detach_regional_disk" {
+resource "null_resource" "force_attach_regional_disk" {
   count = var.bootstrap ? 0 : 1
   triggers = {
     timestamp = timestamp()
   }
   provisioner "local-exec" {
-    command = "gcloud compute instances detach-disk ${var.instance_name_zo_a} --project ${var.project_id} --zone ${var.region}-${var.zone_a} --disk ${var.disk_regional} --disk-scope regional"
+    command = <<EOT
+    gcloud compute instances attach-disk ${google_compute_instance.main[count.index].name} --project ${var.project_id} --zone ${var.region}-${var.zone_b} --disk ${var.disk_regional} --disk-scope regional --device-name ${var.device_name_region} --force-attach
+    gcloud compute instances stop ${google_compute_instance.main[count.index].name} --zone=${var.region}-${var.zone_b} --project=${var.project_id}
+    gcloud compute instances start ${google_compute_instance.main[count.index].name} --zone=${var.region}-${var.zone_b} --project=${var.project_id}
+    EOT
   }
+  depends_on = [google_compute_attached_disk.zonal_disk]
 }
 
 resource "null_resource" "attach_backend" {
@@ -136,6 +140,6 @@ resource "null_resource" "attach_backend" {
   provisioner "local-exec" {
     command = "gcloud compute backend-services add-backend ${var.backend_service} --instance-group=${google_compute_instance_group.main[count.index].name} --instance-group-zone=${var.region}-${var.zone_b} --project=${var.project_id} --region=${var.region}"
   }
+
+  depends_on = [null_resource.force_attach_regional_disk]
 }
-
-

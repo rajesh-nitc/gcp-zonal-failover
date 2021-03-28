@@ -40,6 +40,8 @@ resource "google_compute_instance_group" "main" {
     name = "http"
     port = "80"
   }
+
+  depends_on = [null_resource.attach_regional_disk, null_resource.force_attach_regional_disk]
 }
 
 resource "google_compute_health_check" "default" {
