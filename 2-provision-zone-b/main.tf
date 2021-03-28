@@ -24,7 +24,7 @@ resource "google_compute_instance" "main" {
     }
   }
 
-  desired_status = "RUNNING"
+  desired_status = var.bootstrap ? "RUNNING" : "TERMINATED"
 
   metadata_startup_script = templatefile("templates/startup-script.sh", {
     device_name_zonal  = var.device_name_zonal,
@@ -37,17 +37,8 @@ resource "google_compute_instance" "main" {
 
 }
 
-resource "google_compute_disk" "zonaldisk" {
-  count   = var.bootstrap ? 1 : 0
-  project = var.project_id
-  name    = "bootstrap-disk"
-  zone    = "${var.region}-${var.zone_b}"
-  type    = "pd-ssd"
-  size    = 10
-}
-
 resource "google_compute_attached_disk" "zonal_disk" {
-  count       = 1
+  count       = var.bootstrap ? 0 : 1
   disk        = var.bootstrap ? google_compute_disk.zonaldisk[count.index].id : google_compute_disk.disk_from_latest_snapshot[count.index].id
   instance    = google_compute_instance.main[count.index].id
   device_name = var.device_name_zonal
