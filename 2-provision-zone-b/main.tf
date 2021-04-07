@@ -39,7 +39,7 @@ resource "google_compute_instance" "main" {
 
 resource "google_compute_attached_disk" "zonal_disk" {
   count       = var.bootstrap ? 0 : 1
-  disk        = var.bootstrap ? google_compute_disk.zonaldisk[count.index].id : google_compute_disk.disk_from_latest_snapshot[count.index].id
+  disk        = google_compute_disk.disk_from_latest_snapshot[count.index].id
   instance    = google_compute_instance.main[count.index].id
   device_name = var.device_name_zonal
 }
