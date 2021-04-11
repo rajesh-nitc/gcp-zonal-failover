@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://www.github.com/rajesh-nitc/gcp-failover/compare/v0.1.0...v0.2.0) (2021-04-11)
+
+
+### Features
+
+* some feat2 ([e04b4b9](https://www.github.com/rajesh-nitc/gcp-failover/commit/e04b4b95dcadef52478e6dd6fcba5dc345f2ab52))
+
 ## 0.1.0 (2021-04-11)
 
 
