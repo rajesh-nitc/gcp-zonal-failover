@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.3.1](https://www.github.com/rajesh-nitc/gcp-failover/compare/v0.3.0...v0.3.1) (2021-04-11)
+
+
+### Bug Fixes
+
+* testing release-please complete ([ea20ebf](https://www.github.com/rajesh-nitc/gcp-failover/commit/ea20ebfc797a6f0a67c42a0165fa54c425050f68))
+
 ## [0.3.0](https://www.github.com/rajesh-nitc/gcp-failover/compare/v0.2.0...v0.3.0) (2021-04-11)
 
 
